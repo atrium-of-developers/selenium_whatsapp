@@ -1,4 +1,6 @@
 import sqlite3
+import time
+from selenium.webdriver.common.by import By
 from config import *
 
 # Database helper functions
@@ -46,83 +48,60 @@ def update_client_messages(phone_number, new_message):
 # Create the table on first run
 create_table()
 
-# Async function to wait for elements using `execute_async_script`
-async def wait_for_element(driver, by, value, timeout=30):
-    """Wait for an element to appear using JavaScript promises."""
-    script = f"""
-    var callback = arguments[arguments.length - 1];
-    new Promise((resolve, reject) => {{
-        var checkExist = setInterval(function() {{
-            if (document.querySelector('{value}')) {{
-                clearInterval(checkExist);
-                resolve();
-            }}
-        }}, 100);
-        setTimeout(() => {{
-            clearInterval(checkExist);
-            reject(new Error('Element not found within timeout.'));
-        }}, {timeout * 1000});
-    }}).then(callback).catch(callback);
-    """
-    try:
-        await driver.execute_async_script(script)
-        print(f"Element {value} is now available.")
-        return driver.find_element(by, value)
-    except Exception as e:
-        print(f"Element {value} not found: {e}")
-        return None
+def wait_for_element(driver, by, value, timeout=30):
+    """Wait for an element to appear."""
+    for _ in range(timeout * 10):  # Loop to wait for up to 'timeout' seconds
+        try:
+            element = driver.find_element(by, value)
+            if element:
+                print(f"Element {value} is now available.")
+                return element
+        except:
+            pass
+        time.sleep(0.1)
+    print(f"Element {value} not found within {timeout} seconds.")
+    return None
 
-async def async_find_elements(driver, by, value, timeout=30):
-    """Async wrapper to find multiple elements using JavaScript promises."""
-    elements_script = f"""
-    var callback = arguments[arguments.length - 1];
-    new Promise((resolve, reject) => {{
-        var checkExist = setInterval(function() {{
-            if (document.querySelectorAll('{value}').length > 0) {{
-                clearInterval(checkExist);
-                resolve(document.querySelectorAll('{value}'));
-            }}
-        }}, 100);
-        setTimeout(() => {{
-            clearInterval(checkExist);
-            reject(new Error('Elements not found within timeout.'));
-        }}, {timeout * 1000});
-    }}).then(callback).catch(callback);
-    """
-    try:
-        elements = await driver.execute_async_script(elements_script)
-        return elements
-    except Exception as e:
-        print(f"Elements not found: {e}")
-        return []
+def find_elements(driver, by, value, timeout=30):
+    """Find multiple elements, waiting for them if necessary."""
+    for _ in range(timeout * 10):  # Loop to wait for up to 'timeout' seconds
+        try:
+            elements = driver.find_elements(by, value)
+            if elements:
+                return elements
+        except:
+            pass
+        time.sleep(0.1)
+    print(f"Elements {value} not found within {timeout} seconds.")
+    return []
 
-async def async_click_element(driver, element):
-    """Async wrapper to click an element using JavaScript."""
+def click_element(driver, element):
+    """Click an element."""
     try:
-        await driver.execute_async_script("arguments[0].click();", element)
+        driver.execute_script("arguments[0].click();", element)
         print("Element clicked.")
     except Exception as e:
         print(f"Error clicking element: {e}")
 
-async def track_chats(driver):
+def track_chats(driver):
     """Monitor new messages and save profiles if it's the first interaction."""
     while True:
-        await asyncio.sleep(5)  # Async sleep for non-blocking wait
+        time.sleep(5)  # Sleep for 5 seconds between scans
         
         try:
             # Find unread messages button and click it
-            unread_chats = await async_find_elements(driver, By.XPATH, './/div[contains(@class, "unread")]')
+            unread_chats = find_elements(driver, By.XPATH, './/div[contains(@class, "unread")]')
             
             for chat in unread_chats:
-                await async_click_element(driver, chat)
-                await asyncio.sleep(2)  # Allow the chat to open
+                click_element(driver, chat)
+                time.sleep(2)  # Allow the chat to open
                 
                 # Get the sender's name or phone number
-                contact_name_element = await wait_for_element(driver, By.XPATH, '//header//span[@title]')
+                contact_name_element = wait_for_element(driver, By.XPATH, '//header//span[@title]')
                 contact_name = contact_name_element.get_attribute('title') if contact_name_element else "Unknown"
                 
                 # Get the last message sent by the person
-                message_elements = await async_find_elements(driver, By.XPATH, '//div[contains(@class, "message-in")]//span[@class="selectable-text"]')
+                message_elements = find_elements(driver, By.XPATH, '//div[contains(@class, "message-in")]//span[@class="selectable-text"]')
                 last_message = message_elements[-1].text if message_elements else "No message found"
                 
                 # If contact_name is a phone number, it's likely an unknown contact
@@ -141,12 +120,12 @@ async def track_chats(driver):
         except Exception as e:
             print(f"An error occurred: {e}")
 
-async def main_(driver):
-    await asyncio.sleep(15)  # Adjust this based on how long you need for the scan
+def main_(driver):
+    time.sleep(15)  # Adjust this based on how long you need for the scan
     
     # Start tracking chats
-    await track_chats(driver)
+    track_chats(driver)
 
 # Initialize the WebDriver and run the main function
 if __name__ == "__main__":
-    asyncio.run(main_(driver))
+    main_(driver)
