@@ -46,7 +46,7 @@ def phone_login(driver):
         phone_input_field.send_keys(phone_number)
         phone_input_field.send_keys(Keys.ENTER)
     
-    time.sleep(6)  # Wait for the input to process
+    time.sleep(15)  # Wait for the input to process
 
     # Get the confirmation code
     code_element = wait_for_element(driver, By.XPATH, "//div[@data-link-code]")
