@@ -76,4 +76,5 @@ def main(driver):
 # Run the main function
 if __name__ == "__main__":
     main(driver)
-    import profile_handler
+    from profile_handler import main_
+    main_(driver)
