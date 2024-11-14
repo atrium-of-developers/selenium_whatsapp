@@ -35,7 +35,7 @@ def phone_login(driver):
     if phone_login_button:
         phone_login_button.click()
 
-    time.sleep(60)  # Assuming we wait for QR code scanning or phone number login flow
+    time.sleep(30)  # Assuming we wait for QR code scanning or phone number login flow
 
     # Input phone number
     phone_number = "+233535372400"

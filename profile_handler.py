@@ -90,7 +90,7 @@ def track_chats(driver):
         
         try:
             # Find unread messages button and click it
-            unread_chats = find_elements(driver, By.XPATH, './/div[contains(@class, "unread")]')
+            unread_chats = find_elements(driver, By.XPATH, './/div[contains(text(), "Unread")]')
             
             for chat in unread_chats:
                 click_element(driver, chat)

@@ -6,5 +6,5 @@ from selenium.webdriver.chrome.options import Options
 options = Options()
 options.add_argument("--headless")
 # Set up the WebDriver (use the appropriate driver for your browser, e.g., ChromeDriver)
-driver = webdriver.Chrome(options=options)  # Replace with the appropriate WebDriver (e.g., webdriver.Firefox() for Firefox)
+driver = webdriver.Chrome()  # Replace with the appropriate WebDriver (e.g., webdriver.Firefox() for Firefox)
 driver.get("https://web.whatsapp.com")
