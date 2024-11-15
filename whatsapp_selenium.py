@@ -6,13 +6,15 @@ from selenium.webdriver.common.keys import Keys
 # Helper function to wait for an element
 def wait_for_element(driver, by, value, timeout=30):
     """Wait for an element to appear."""
-    for _ in range(timeout * 10):  # Loop to wait for up to 'timeout' seconds
+    for _ in range(10): # Loop to wait for up to 'timeout' seconds
+        time.sleep(timeout)
         try:
             element = driver.find_element(by, value)
             if element:
                 print(f"Element {value} is now available.")
                 return element
         except:
+            driver.save_screenshot(f‘"{value}{_}".png’)
             pass
         time.sleep(0.1)
     print(f"Element {value} not found within {timeout} seconds.")
