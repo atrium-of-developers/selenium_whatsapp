@@ -91,22 +91,29 @@ def press_unread_button():
     except NoSuchElementException:
         print("No 'Unread' button found.")
 
-def get_sender_and_last_message():
-    """Retrieve the sender and the last message from the unread section."""
+
+def click_on_unread_and_get_message():
+    """Click on the first unread contact and retrieve the last message."""
     try:
-        sender_elements = driver.find_elements(By.XPATH, CONTACT_NAME_SELECTOR)
-        message_elements = driver.find_elements(By.XPATH, LATEST_MESSAGE_SELECTOR)
+        # Identify the unread contact by its XPath (adjust selector based on actual page structure)
+        unread_contacts = driver.find_elements(By.XPATH, CONTACT_NAME_SELECTOR)
+        if unread_contacts:
+            # Click on the first unread contact
+            unread_contact = unread_contacts[0]
+            unread_contact.click()
 
-        if sender_elements and message_elements:
-            sender = sender_elements[-1].get_attribute('title').strip()
-            last_message = message_elements[-1].text.strip()
-            return sender, last_message
+            # Wait for the conversation to load
+            time.sleep(2)
+
+            # Now retrieve the last message in the conversation
+            last_message = driver.find_element(By.XPATH, '//*[@id="main"]/footer//div[@class="_2_1wd copyable-text selectable-text"]')
+            return last_message.text.strip()
         else:
-            return None, None
+            print("No unread contacts found.")
+            return None
     except Exception as e:
-        print(f"Error retrieving sender and message: {e}")
-        return None, None
-
+        print(f"Error: {e}")
+        return None
 # Main logic to listen and respond
 def listen_and_respond():
     user_data = load_user_data()
