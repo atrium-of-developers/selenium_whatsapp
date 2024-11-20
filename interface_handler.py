@@ -92,7 +92,7 @@ def press_unread_button():
         print("No 'Unread' button found.")
 
 
-def click_on_unread_and_get_message():
+def get_sender_and_last_message():
     """Click on the first unread contact and retrieve the last message."""
     try:
         # Identify the unread contact by its XPath (adjust selector based on actual page structure)
@@ -107,7 +107,7 @@ def click_on_unread_and_get_message():
 
             # Now retrieve the last message in the conversation
             last_message = driver.find_element(By.XPATH, '//*[@id="main"]/footer//div[@class="_2_1wd copyable-text selectable-text"]')
-            return last_message.text.strip()
+            return sender_elements[-1].get_attribute('title').strip(), last_message.text.strip()
         else:
             print("No unread contacts found.")
             return None
