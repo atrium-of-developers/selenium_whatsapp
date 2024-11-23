@@ -75,8 +75,17 @@ def send_message(user, message):
         search_box.send_keys(user, Keys.ENTER)
 
         message_box = driver.find_element(By.XPATH, "//*[@aria-placeholder='Type a message']")
-        message_box.click()
-        message_box.send_keys(message, Keys.ENTER)
+        message_box.click()  # Focus on the message box
+
+# Split the message into lines for multi-line support
+        for line in message.split('\n'):
+            message_box.send_keys(line)  # Type the current line
+            message_box.send_keys(Keys.SHIFT, Keys.ENTER)  # Add a newline (without sending)
+
+# Send the entire message by pressing Enter
+        message_box.send_keys(Keys.ENTER)
+
+# Close the chat box with ESCAPE if needed
         message_box.send_keys(Keys.ESCAPE)
     except Exception as e:
         print(f"Error sending message: {e}")
