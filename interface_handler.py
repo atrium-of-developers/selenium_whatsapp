@@ -186,22 +186,74 @@ def listen_and_respond():
                     send_message(sender, "Please enter a valid subtopic number.")
             else:
                 content = get_content(user_state["subtopic"])
+                subtopics = get_subtopics(user_state["topic"])
                 if last_message.lower() == "n":
                     if user_state["content_index"] < len(content) - 1:
                         user_state["content_index"] += 1
                         save_user_data(user_data)
                         send_message(sender, content[user_state["content_index"]][1])
                     else:
-                        send_message(sender, "You've reached the end of this subtopic.")
+                        # Move to the next subtopic
+                        current_subtopic_index = next((i for i, st in enumerate(subtopics) if st[0] == user_state["subtopic"]), -1)
+                        if current_subtopic_index < len(subtopics) - 1:
+                            next_subtopic_id = subtopics[current_subtopic_index + 1][0]
+                            next_content = get_content(next_subtopic_id)
+                            if next_content:
+                                user_state["subtopic"] = next_subtopic_id
+                                user_state["content_index"] = 0
+                                save_user_data(user_data)
+                                send_message(sender, next_content[0][1])
+                            else:
+                                send_message(sender, "The next subtopic has no content.")
+                        else:
+                            send_message(sender, "You've reached the last subtopic in this topic.")
                 elif last_message.lower() == "b":
                     if user_state["content_index"] > 0:
                         user_state["content_index"] -= 1
                         save_user_data(user_data)
                         send_message(sender, content[user_state["content_index"]][1])
                     else:
-                        send_message(sender, "You're at the beginning of this subtopic.")
+                        # Move to the previous subtopic
+                        current_subtopic_index = next((i for i, st in enumerate(subtopics) if st[0] == user_state["subtopic"]), -1)
+                        if current_subtopic_index > 0:
+                            prev_subtopic_id = subtopics[current_subtopic_index - 1][0]
+                            prev_content = get_content(prev_subtopic_id)
+                            if prev_content:
+                                user_state["subtopic"] = prev_subtopic_id
+                                user_state["content_index"] = len(prev_content) - 1
+                                save_user_data(user_data)
+                                send_message(sender, prev_content[-1][1])
+                            else:
+                                send_message(sender, "The previous subtopic has no content.")
+                        else:
+                            send_message(sender, "You're at the first subtopic in this topic.")
+                elif last_message.lower() == "next":
+                    # Move to the next topic
+                    next_topic_id = user_state["topic"] + 1
+                    subtopics = get_subtopics(next_topic_id)
+                    if subtopics:
+                        user_state.update({"topic": next_topic_id, "subtopic": subtopics[0][0], "content_index": 0})
+                        save_user_data(user_data)
+                        next_content = get_content(subtopics[0][0])
+                        send_message(sender, next_content[0][1])
+                    else:
+                        send_message(sender, "There is no next topic.")
+                elif last_message.lower() == "back":
+                    # Move to the previous topic
+                    prev_topic_id = user_state["topic"] - 1
+                    if prev_topic_id > 0:
+                        subtopics = get_subtopics(prev_topic_id)
+                        if subtopics:
+                            user_state.update({"topic": prev_topic_id, "subtopic": subtopics[-1][0], "content_index": 0})
+                            save_user_data(user_data)
+                            prev_content = get_content(subtopics[-1][0])
+                            send_message(sender, prev_content[0][1])
+                        else:
+                            send_message(sender, "The previous topic has no content.")
+                    else:
+                        send_message(sender, "You're already at the first topic.")
                 else:
-                    send_message(sender, "Invalid command. Use 'n' for next, 'b' for back, or 'menu' to return to the main menu.")
+                    send_message(sender, "Invalid command. Use 'n' for next, 'b' for back, 'next' for next topic, 'back' for previous topic, or 'menu' to return to the main menu.")
         except Exception as e:
             print(f"Unexpected error: {e}")
             traceback.print_exc()
