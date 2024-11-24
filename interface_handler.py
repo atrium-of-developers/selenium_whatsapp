@@ -83,10 +83,12 @@ def send_message(user, message):
             message_box.send_keys(Keys.SHIFT, Keys.ENTER)  # Add a newline (without sending)
 
 # Send the entire message by pressing Enter
+        
         message_box.send_keys(Keys.ENTER)
 
 # Close the chat box with ESCAPE if needed
         message_box.send_keys(Keys.ESCAPE)
+        time.sleep(0.4)
     except Exception as e:
         print(f"Error sending message: {e}")
         traceback.print_exc()
@@ -166,21 +168,23 @@ def listen_and_respond():
     user_data = load_user_data()
     admin_number = "+233206814915"  # Replace with the actual admin number
     wait = WebDriverWait(driver, 60)
+
     while True:
         try:
-            
+            print("Navigating to 'Unread' messages...")
+            press_unread_button()
+
+            # Get the last sender and message
             sender, last_message = get_sender_and_last_message()
-                
             if not sender or not last_message:
                 time.sleep(1)
                 continue
 
             # Handle admin messages
-            if sender == admin_number or sender == "My Vodafone":
+            if sender == admin_number:
                 try:
                     data = json.loads(last_message)
                     if isinstance(data, dict):
-                        create_tables()
                         add_data(data)
                         send_message(sender, "Data added successfully!")
                     else:
@@ -203,6 +207,21 @@ def listen_and_respond():
                 user_state.update({"topic": None, "subtopic": None, "content_index": 0})
                 save_user_data(user_data)
                 send_message(sender, get_menu())
+
+            elif last_message.lower().startswith("topic"):
+                try:
+                    topic_id = int(last_message.split(" ")[1])
+                    subtopics = get_subtopics(topic_id)
+                    if subtopics:
+                        user_state.update({"topic": topic_id, "subtopic": None, "content_index": 0})
+                        save_user_data(user_data)
+                        subtopics_menu = "Choose a subtopic:\n" + "\n".join([f"{st[0]}. {st[1]}" for st in subtopics])
+                        send_message(sender, subtopics_menu)
+                    else:
+                        send_message(sender, "Invalid topic. Please try again.")
+                except (ValueError, IndexError):
+                    send_message(sender, "Please specify a valid topic number. For example: 'topic 1'.")
+
             elif user_state["topic"] is None:
                 try:
                     topic_id = int(last_message)
@@ -216,6 +235,7 @@ def listen_and_respond():
                         send_message(sender, "Invalid topic. Please try again.")
                 except ValueError:
                     send_message(sender, "Please enter a valid topic number.")
+
             elif user_state["subtopic"] is None:
                 try:
                     subtopic_id = int(last_message)
@@ -229,6 +249,7 @@ def listen_and_respond():
                         send_message(sender, "Invalid subtopic. Please try again.")
                 except ValueError:
                     send_message(sender, "Please enter a valid subtopic number.")
+
             else:
                 content = get_content(user_state["subtopic"])
                 if last_message.lower() == "n":
@@ -237,18 +258,68 @@ def listen_and_respond():
                         save_user_data(user_data)
                         send_message(sender, content[user_state["content_index"]][1])
                     else:
-                        send_message(sender, "You've reached the end of this subtopic.")
+                        # Move to the next subtopic if available
+                        subtopics = get_subtopics(user_state["topic"])
+                        current_subtopic_ids = [st[0] for st in subtopics]
+                        next_index = current_subtopic_ids.index(user_state["subtopic"]) + 1
+                        if next_index < len(current_subtopic_ids):
+                            user_state["subtopic"] = current_subtopic_ids[next_index]
+                            user_state["content_index"] = 0
+                            save_user_data(user_data)
+                            new_content = get_content(user_state["subtopic"])
+                            send_message(sender, new_content[0][1])
+                        else:
+                            send_message(sender, "You've reached the end of this topic.")
+
                 elif last_message.lower() == "b":
                     if user_state["content_index"] > 0:
                         user_state["content_index"] -= 1
                         save_user_data(user_data)
                         send_message(sender, content[user_state["content_index"]][1])
                     else:
-                        send_message(sender, "You're at the beginning of this subtopic.")
+                        # Move to the previous subtopic if available
+                        subtopics = get_subtopics(user_state["topic"])
+                        current_subtopic_ids = [st[0] for st in subtopics]
+                        prev_index = current_subtopic_ids.index(user_state["subtopic"]) - 1
+                        if prev_index >= 0:
+                            user_state["subtopic"] = current_subtopic_ids[prev_index]
+                            user_state["content_index"] = 0
+                            save_user_data(user_data)
+                            new_content = get_content(user_state["subtopic"])
+                            send_message(sender, new_content[0][1])
+                        else:
+                            send_message(sender, "You're at the beginning of this topic.")
+
+                elif last_message.lower() == "next":
+                    # Move to the next topic
+                    topics = get_menu()
+                    current_topic_ids = [int(line.split(".")[0]) for line in topics.splitlines()[1:]]
+                    next_topic_id = current_topic_ids.index(user_state["topic"]) + 1
+                    if next_topic_id < len(current_topic_ids):
+                        user_state.update({"topic": current_topic_ids[next_topic_id], "subtopic": None, "content_index": 0})
+                        save_user_data(user_data)
+                        send_message(sender, get_subtopics(current_topic_ids[next_topic_id]))
+                    else:
+                        send_message(sender, "You're at the last topic.")
+
+                elif last_message.lower() == "back":
+                    # Move to the previous topic
+                    topics = get_menu()
+                    current_topic_ids = [int(line.split(".")[0]) for line in topics.splitlines()[1:]]
+                    prev_topic_id = current_topic_ids.index(user_state["topic"]) - 1
+                    if prev_topic_id >= 0:
+                        user_state.update({"topic": current_topic_ids[prev_topic_id], "subtopic": None, "content_index": 0})
+                        save_user_data(user_data)
+                        send_message(sender, get_subtopics(current_topic_ids[prev_topic_id]))
+                    else:
+                        send_message(sender, "You're at the first topic.")
+
                 else:
-                    send_message(sender, "Invalid command. Use 'n' for next, 'b' for back, or 'menu' to return to the main menu.")
+                    send_message(sender, "Invalid command. Use 'n' for next, 'b' for back, 'next' for the next topic, 'back' for the previous topic, or 'menu' to return to the main menu.")
         except Exception as e:
-            pass
+            print(f"Unexpected error: {e}")
+            traceback.print_exc()
+                        
 # Start listening
 press_unread_button()
 listen_and_respond()
