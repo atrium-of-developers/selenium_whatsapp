@@ -11,9 +11,6 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 from config import *
 from add_data import *
 
-UNREAD_BUTTON_SELECTOR = '//*[@id="side"]/div[2]/button[2]'
-CONTACT_NAME_SELECTOR = "//*[@id='pane-side']/div/div/div/div/div/div/div/div[2]/div[1]/div[1]/div/span"
-
 # Utility functions for user data
 def load_user_data():
     try:
