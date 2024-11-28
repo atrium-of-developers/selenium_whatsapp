@@ -1,10 +1,10 @@
 import sqlite3
-
+from config import db_name
 def create_tables():
     """
     Creates the database schema with topics, subtopics, and content tables.
     """
-    conn = sqlite3.connect("study_bot.db")
+    conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
     # Create tables
