@@ -2,7 +2,7 @@ import json
 from add_data import add_data
 
 with open('lessondata.json', 'r') as file:
-    c = json.load(file)
+    data = json.load(file)
 
-add_data(c)
+add_data(data)
 print("done")
