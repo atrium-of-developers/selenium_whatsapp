@@ -10,8 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
 from config import *
 from add_data import *
-db_name = "study_bot.db"
-user_data_file = "user_profiles.json"
 
 UNREAD_BUTTON_SELECTOR = '//*[@id="side"]/div[2]/button[2]'
 CONTACT_NAME_SELECTOR = "//*[@id='pane-side']/div/div/div/div/div/div/div/div[2]/div[1]/div[1]/div/span"
@@ -273,7 +271,6 @@ def listen_and_respond():
     Handles navigation through topics, subtopics, and content.
     """
     user_data = load_user_data()
-    admin_number = "+233206814915"  # Replace with the actual admin number
     wait = WebDriverWait(driver, 60)
 
     while True:
