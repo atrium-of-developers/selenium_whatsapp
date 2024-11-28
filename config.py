@@ -13,6 +13,7 @@ options.add_argument("--disable-gpu")
 driver = webdriver.Chrome(options=options)
 
 admin_number = "+233206814915"
+phone_number = "+233509119224"
 
 db_name = "study_bot.db"
 user_data_file = "user_profiles.json"
