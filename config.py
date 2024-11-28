@@ -22,10 +22,8 @@ user_data_file = "user_profiles.json"
 # Replace with the appropriate WebDriver (e.g., webdriver.Firefox() for Firefox)
 driver.get("https://web.whatsapp.com")
 # XPath selector for unread chats button
-UNREAD_CHATS_SELECTOR = './/div[contains(text(), "Unread")]'
-
-# XPath selector for the contact name or phone number in the header
-CONTACT_NAME_SELECTOR = '//header//span[@title]'
+UNREAD_BUTTON_SELECTOR = '//*[@id="side"]/div[2]/button[2]'
+CONTACT_NAME_SELECTOR = "//*[@id='pane-side']/div/div/div/div/div/div/div/div[2]/div[1]/div[1]/div/span"
 
 # XPath selector for the latest incoming message content
 LATEST_MESSAGE_SELECTOR = '//div[contains(@class, "message-in")]//span[@class="selectable-text"]'
