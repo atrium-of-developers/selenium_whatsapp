@@ -26,4 +26,4 @@ UNREAD_BUTTON_SELECTOR = '//*[@id="side"]/div[2]/button[2]'
 CONTACT_NAME_SELECTOR = "//*[@id='pane-side']/div/div/div/div/div/div/div/div[2]/div[1]/div[1]/div/span"
 
 # XPath selector for the latest incoming message content
-LATEST_MESSAGE_SELECTOR = '//div[contains(@class, "message-in")]//span[@class="selectable-text"]'
+LATEST_MESSAGE_SELECTOR = "//*[@id='main']//div[contains(@class, '_amk4')]/div[contains(@class, '_amk6')]//div[contains(@class, '_akbu')]/span[contains(@class, 'selectable-text')]"
