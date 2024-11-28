@@ -12,6 +12,11 @@ options.add_argument("--disable-gpu")
 # Create WebDriver instance
 driver = webdriver.Chrome(options=options)
 
+admin_number = "+233206814915"
+
+db_name = "study_bot.db"
+user_data_file = "user_profiles.json"
+
 # Set up the WebDriver (use the appropriate driver for your browser, e.g., ChromeDriver)
 # Replace with the appropriate WebDriver (e.g., webdriver.Firefox() for Firefox)
 driver.get("https://web.whatsapp.com")
