@@ -218,7 +218,7 @@ def get_sender_and_last_message():
             buttons = driver.find_elements(By.CLASS_NAME, "read-more-button")
             if buttons:
                 buttons[-1].click()
-            messages = driver.find_elements(By.XPATH, "//*[@id='main']//div[contains(@class, '_amk4')]/div[contains(@class, '_amk6')]//div[contains(@class, '_akbu')]/span[contains(@class, 'selectable-text')]")
+            messages = driver.find_elements(By.XPATH, LATEST_MESSAGE_SELECTOR)
 
             parent_element = messages[-1]
             span_elements = parent_element.find_elements(By.TAG_NAME, "span")
