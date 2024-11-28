@@ -74,9 +74,7 @@ def phone_login(driver):
         phone_login_button.click()
 
     time.sleep(30)  # Assuming we wait for QR code scanning or phone number login flow
-
-    # Input phone number
-    phone_number = "+233509119224"
+    
     phone_input_field = wait_for_element(driver, By.XPATH, '//input[@type="text"]')
     if phone_input_field:
         phone_input_field.send_keys(Keys.CONTROL + "a")
