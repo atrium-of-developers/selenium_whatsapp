@@ -2,7 +2,7 @@ from config import *
 import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-
+from add_data import create_tables
 
 # Check if already logged in (check for the QR code canvas)
 def is_logged_in(driver):
@@ -107,4 +107,5 @@ def main(driver):
 # Run the main function
 if __name__ == "__main__":
     main(driver)
+    create_tables()
     import interface_handler
