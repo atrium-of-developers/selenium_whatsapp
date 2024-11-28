@@ -338,8 +338,8 @@ def get_info_message():
         "- 'topic <<number>>' eg. topic 5 moves straight the fifth topic%0a"
         "- 'n': Move to the next piece of content (or next topic/subtopic).%0a"
         "- 'b': Move to the previous piece of content (or previous topic/subtopic).%0a"
-        "- 'next': Jump to the next topic.%0a"
-        "- 'back': Jump to the previous topic.%0a"
+        "- 'next': Jump to the next subtopic.%0a"
+        "- 'back': Jump to the previous subtopic.%0a"
         "- 'info': Show this help message.%0a%0a"
         "Explore and enjoy learning"
     )
@@ -499,7 +499,7 @@ def handle_content_navigation(sender, message, user_state):
         send_message(sender, "Invalid command. Send 'info' for more details")
 
 # Helper functions for topic transitions (handle_next_topic, handle_previous_topic) remain similar
-def handle_next_topic(sender, user_state):
+def handle_next_subtopic(sender, user_state):
     """
     Moves the user to the next topic and its first subtopic.
 
@@ -507,20 +507,26 @@ def handle_next_topic(sender, user_state):
     :param user_state: The user's current state as a dictionary.
     """
     try:
-        next_topic_id = user_state["topic"] + 1
-        next_subtopics = get_subtopics(next_topic_id)
+        topic_id = user_state["topic"]
+        next_subtopic = user_state["subtopic"] + 1
 
-        if next_subtopics:
-            user_state.update({"topic": next_topic_id, "subtopic": next_subtopics[0][0], "content_index": 0})
+        if next_subtopic:
+            user_state.update({"subtopic": next_subtopic, "content_index": 0})
             save_user_data(user_state)
 	    
             # Notify user and send first subtopic content
-            first_content = get_content(next_subtopics[0][0])
+	    try:
+                first_content = get_content(next_subtopic)
+	    except:
+		first_content= get_content(2)
+		next_subtopic = 1
+	        user_state.update({"topic":2, "subtopic": 1, "content_index": 0})
+                save_user_data(user_state)
+		
             if first_content:
-                print(first_content)
                 send_message(
                 sender,
-                f" You've moved to the next topic (Topic {next_topic_id}).%0a%0aStarting subtopic:%0a{first_content[0][0]}"
+                f" You've moved to the next subtopic (Topic {next_subtopic}).%0a%0aStarting subtopic:%0a{first_content[0][0]}"
             )
             else:
                 send_message(sender, "No content available in the first subtopic.")
@@ -540,22 +546,29 @@ def handle_previous_topic(sender, user_state):
     :param user_state: The user's current state as a dictionary.
     """
     try:
-        prev_topic_id = user_state["topic"] - 1
+	prev_topic_id = user_state["topic"] - 1
+        prev_subtopic = user_state["subtopic"] - 1
         if prev_topic_id <= 0:
             send_message(sender, "There are no previous topics to move to.")
             return
 
-        prev_subtopics = get_subtopics(prev_topic_id)
-        if prev_subtopics:
-            user_state.update({"topic": prev_topic_id, "subtopic": prev_subtopics[-1][0], "content_index": 0})
+        if prev_subtopic:
+            user_state.update({"subtopic": prev_subtopic, "content_index": 0})
             save_user_data(user_state)
 
             # Notify user and send last subtopic content
-            last_content = get_content(prev_subtopics[-1][0])
+	    try:
+                last_content = get_content(prev_subtopic)
+	    except:
+		last_content= get_content(2)
+		prev_subtopic = 1
+	        user_state.update({"topic":2, "subtopic": 1, "content_index": 0})
+                save_user_data(user_state)
+		    
             if last_content:
                 send_message(
                 sender,
-                f" You've moved to the previous topic (Topic {prev_topic_id}).%0a%0aStarting from the last subtopic:%0a{last_content[0][0]}"
+                f" You've moved to the previous subtopic (Topic {prev_subtopic}).%0a%0aStarting from the last subtopic:%0a{last_content[0][0]}"
             )
             else:
                 send_message(sender, "No content available in the last subtopic.")
