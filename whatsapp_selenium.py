@@ -3,20 +3,6 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-# Helper function to wait for an element
-def wait_for_element(driver, by, value, timeout=30):
-    """Wait for an element to appear."""
-    for _ in range(timeout * 10):  # Loop to wait for up to 'timeout' seconds
-        try:
-            element = driver.find_element(by, value)
-            if element:
-                print(f"Element {value} is now available.")
-                return element
-        except:
-            pass
-        time.sleep(0.1)
-    print(f"Element {value} not found within {timeout} seconds.")
-    return None
 
 # Check if already logged in (check for the QR code canvas)
 def is_logged_in(driver):
@@ -27,6 +13,58 @@ def is_logged_in(driver):
     except Exception:
         print("Already logged in.")
         return True
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+def wait_for_element(driver, by, value, timeout=30):
+    """Wait for an element to appear using JavaScript promises."""
+    script = f"""
+    var callback = arguments[arguments.length - 1];
+    new Promise((resolve, reject) => {{
+        var checkExist = setInterval(function() {{
+            if (document.querySelector('{value}')) {{
+                clearInterval(checkExist);
+                resolve();
+            }}
+        }}, 100);
+        setTimeout(() => {{
+            clearInterval(checkExist);
+            reject(new Error('Element not found within timeout.'));
+        }}, {timeout * 1000});
+    }}).then(callback).catch(callback);
+    """
+    try:
+        driver.execute_async_script(script)
+        print(f"Element {value} is now available.")
+        return driver.find_element(by, value)
+    except Exception as e:
+        print(f"Element {value} not found: {e}")
+        return None
+
+# Polling function to catch dynamic attribute change
+def poll_for_dynamic_attribute(driver, xpath, timeout=30, poll_interval=1):
+    try:
+        # Get the initial element
+        element = driver.find_element(By.XPATH, xpath)
+        old_value = element.get_attribute('data-link-code')
+
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            time.sleep(poll_interval)
+            element = driver.find_element(By.XPATH, xpath)
+            new_value = element.get_attribute('data-link-code')
+
+            if new_value != old_value:
+                old_value = new_value
+                data_link_code = new_value.replace(",", ' ')
+                print(f"Updated Confirmation Code: {data_link_code[:7] + ' -' + data_link_code[7:]}")
+                
+        print("Timeout reached, no further changes detected.")
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 # Phone login process
 def phone_login(driver):
@@ -49,12 +87,7 @@ def phone_login(driver):
     time.sleep(15)  # Wait for the input to process
 
     # Get the confirmation code
-    code_element = wait_for_element(driver, By.XPATH, "//div[@data-link-code]")
-    if code_element:
-        data_link_code = code_element.get_attribute("data-link-code")
-        data_link_code = data_link_code.replace(",", ' ')
-        print(f"Confirmation Code: {data_link_code[:7] + ' -' + data_link_code[7:]}")
-
+    poll_for_dynamic_attribute(driver, "//div[@data-link-code]")
     # Wait for confirmation from the user to proceed
     input("Press Enter if you have linked the device")
     print("Code entered. You should be logged in shortly.")
